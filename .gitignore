@@ -3,3 +3,9 @@
 
 # build files
 build/
+
+Debug/
+
+.cproject
+.project
+.settings/
