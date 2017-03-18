@@ -49,10 +49,10 @@ UKF::UKF() {
   std_yawdd_ = 0.1;
 
   // Laser measurement noise standard deviation position1 in m
-  std_laspx_ = 0.225;
+  std_laspx_ = 0.0068374897772981421;
 
   // Laser measurement noise standard deviation position2 in m
-  std_laspy_ = 0.225;
+  std_laspy_ = 0.0054887300686829819;
 
   // Radar measurement noise standard deviation radius in m
   std_radr_ = 0.1;
@@ -92,7 +92,7 @@ VectorXd UKF::InitStateRadarMeasurement(
 
   double px = rho * cos(phi);  // metres
   double py = rho * sin(phi);  // metres
-  double v = 0.0;  // metres/sec
+  double v = rhod;  // metres/sec
   double yaw = phi;  // radians
   double yawd = 0.0;  // radians/sec
 
@@ -156,8 +156,8 @@ void UKF::ProcessMeasurement(MeasurementPackage measurement_pack) {
    */
   Prediction(delta_t);
 
-  cout << "predict x_ = " << x_ << endl;
-  cout << "predict P_ = " << P_ << endl;
+//  cout << "predict x_ = " << x_ << endl;
+//  cout << "predict P_ = " << P_ << endl;
 
   /*
    * Update
@@ -192,10 +192,10 @@ void UKF::Prediction(double delta_t) {
 //  cout << "P_ = " << P_ << endl;
   MatrixXd Xsig_aug = AugmentedSigmaPoints(n_x_, n_aug_, std_a_, std_yawdd_, x_,
                                            P_);
-  cout << "Xsig_aug = " << Xsig_aug << endl;
+//  cout << "Xsig_aug = " << Xsig_aug << endl;
 
   Xsig_pred_ = PredictSigmaPoints(n_x_, n_aug_, delta_t, Xsig_aug);
-  cout << "Xsig_pred = " << Xsig_pred_ << endl;
+//  cout << "Xsig_pred = " << Xsig_pred_ << endl;
 
   tie(x_, P_) = PredictMeanAndCovariance(n_x_, n_aug_, Xsig_pred_);
 
@@ -403,15 +403,15 @@ void UKF::UpdateLidar(MeasurementPackage meas_package) {
   std::tie(z_pred, S) = PredictLaserMeasurement(n_x_, n_aug_, n_z, std_laspx_,
                                                 std_laspy_, Xsig_pred_);
 
-  cout << "z_pred " << z_pred << endl;
-  cout << "S " << S << endl;
+//  cout << "z_pred " << z_pred << endl;
+//  cout << "S " << S << endl;
 
   /*
    * Update State
    */
   MatrixXd Zsig = SigmaPointsLaserMeasurementSpace(n_z, n_aug_, Xsig_pred_);
 
-  cout << "Zsig " << Zsig << endl;
+//  cout << "Zsig " << Zsig << endl;
 
   tie(x_, P_) = UpdateState(n_x_, n_aug_, n_z, Xsig_pred_, x_, P_, Zsig, z_pred,
                             S, z);
@@ -467,11 +467,11 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
   std::tie(z_pred, S) = PredictRadarMeasurement(n_x_, n_aug_, n_z, std_radr_,
                                                 std_radphi_, std_radrd_,
                                                 Xsig_pred_);
-  cout << "z_pred " << z_pred << endl;
-  cout << "S " << S << endl;
+//  cout << "z_pred " << z_pred << endl;
+//  cout << "S " << S << endl;
 
   MatrixXd Zsig = SigmaPointsRadarMeasurementSpace(n_z, n_aug_, Xsig_pred_);
-  cout << "Zsig " << Zsig << endl;
+//  cout << "Zsig " << Zsig << endl;
 
   tie(x_, P_) = UpdateState(n_x_, n_aug_, n_z, Xsig_pred_, x_, P_, Zsig, z_pred,
                             S, z);
@@ -711,5 +711,5 @@ tuple<VectorXd, MatrixXd> UKF::UpdateState(int n_x, int n_aug, int n_z,
   VectorXd x_update = x + K * z_diff;
   MatrixXd P_update = P - K * S * K.transpose();
 
-  return std::make_tuple(x_update, P_update);
+  return make_tuple(x_update, P_update);
 }
