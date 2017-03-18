@@ -29,6 +29,14 @@ class UKF {
   ///* state covariance matrix
   MatrixXd P_;
 
+  ///* Measurement dimensions
+  int n_laser_z_;
+  int n_radar_z_;
+
+  ///* measurement covariance matrices
+  MatrixXd R_laser_;
+  MatrixXd R_radar_;
+
   ///* predicted sigma points matrix
   MatrixXd Xsig_pred_;
 
@@ -120,8 +128,7 @@ class UKF {
    * @param x State Vector
    * @param P State Coveriance Matrix
    */
-  const MatrixXd GenerateSigmaPoints(int n_x, const VectorXd x,
-                                     const MatrixXd P);
+  MatrixXd GenerateSigmaPoints(int n_x, const VectorXd& x, const MatrixXd& P);
 
   /*
    * Augment Sigma Points
@@ -132,19 +139,19 @@ class UKF {
    * @param x State vector
    * @param P State covariance Matrix
    */
-  const MatrixXd AugmentedSigmaPoints(int n_x, int n_aug, double std_a,
-                                      double std_yawdd, const VectorXd x,
-                                      const MatrixXd P);
+  MatrixXd AugmentedSigmaPoints(int n_x, int n_aug, double std_a,
+                                double std_yawdd, const VectorXd& x,
+                                const MatrixXd& P);
 
   /*
-   * Sigma Point Prediction
+   * Predict Sigma Points
    * @param n_x State dimension
    * @param n_aug Augmentation dimension
    * @param delta_t Time between k and k+1 in s
    * @param Xsig_aug Augmented sigma points matrix
    */
-  const MatrixXd SigmaPointPrediction(int n_x, int n_aug, double delta_t,
-                                      const MatrixXd Xsig_aug);
+  MatrixXd PredictSigmaPoints(int n_x, int n_aug, double delta_t,
+                              const MatrixXd& Xsig_aug);
 
   /*
    * Predict Mean and Covariance
@@ -152,11 +159,11 @@ class UKF {
    * @param n_aug Augmentation dimension
    * @param Xsig_pred Predicted sigma points matrix
    */
-  const tuple<VectorXd, MatrixXd> PredictMeanAndCovariance(
-      int n_x, int n_aug, const MatrixXd Xsig_pred);
+  tuple<VectorXd, MatrixXd> PredictMeanAndCovariance(int n_x, int n_aug,
+                                                     const MatrixXd& Xsig_pred);
 
   /*
-   * Predict Radar Measuerment
+   * Predict Radar Measurement
    * @param n_x State dimension
    * @param n_aug Augmentation dimension
    * @param n_z Measurement dimension, radar can measure r, phi, and r_dot
@@ -165,9 +172,11 @@ class UKF {
    * @param std_radrd Radar measurement noise standard deviation radius change in m/s
    * @param Xsig_pred Predicted sigma points matrix
    */
-  const tuple<VectorXd, MatrixXd> PredictRadarMeasurement(
-      int n_x, int n_aug, int n_z, double std_radr, double std_radphi,
-      double std_radrd, const MatrixXd Xsig_pred);
+  tuple<VectorXd, MatrixXd> PredictRadarMeasurement(int n_x, int n_aug, int n_z,
+                                                    double std_radr,
+                                                    double std_radphi,
+                                                    double std_radrd,
+                                                    const MatrixXd& Xsig_pred);
 
   /*
    * Predict Laser Measurement
@@ -178,19 +187,22 @@ class UKF {
    * @param std_laspy Laser measurement noise standard deviation position2 in m
    * @param Xsig_pred Predicted sigma points matrix
    */
-  const tuple<VectorXd, MatrixXd> PredictLaserMeasurement(
-      int n_x, int n_aug, int n_z, double std_laspx, double std_laspy,
-      const MatrixXd Xsig_pred);
+  tuple<VectorXd, MatrixXd> PredictLaserMeasurement(int n_x, int n_aug, int n_z,
+                                                    double std_laspx,
+                                                    double std_laspy,
+                                                    const MatrixXd& Xsig_pred);
 
   /*
    * Predict Measurement Covariance
    * @param n_x State dimension
    * @param n_aug Augmentation dimension
    * @param n_z Measurement dimension, radar can measure r, phi, and r_dot
+   * @param Zsig sigma points in measurement space MatrixXd(n_z, 2 * n_aug + 1)
    * @param Xsig_pred Predicted sigma points matrix
    */
-  const tuple<VectorXd, MatrixXd> PredictMeasurementCovariance(
-      int n_x, int n_aug, int n_z, const MatrixXd Xsig_pred);
+  tuple<VectorXd, MatrixXd> PredictMeasurementCovariance(
+      int n_x, int n_aug, int n_z, const MatrixXd& Zsig,
+      const MatrixXd& Xsig_pred);
 
   /*
    * Update State
@@ -205,37 +217,48 @@ class UKF {
    * @param z vector for incoming measurement
    *
    */
-  const tuple<VectorXd, MatrixXd> UpdateState(int n_x, int n_aug, int n_z,
-                                              const MatrixXd Xsig_pred,
-                                              const VectorXd x,
-                                              const MatrixXd P,
-                                              const MatrixXd Zsig,
-                                              const VectorXd z_pred,
-                                              const MatrixXd S,
-                                              const VectorXd z);
+  tuple<VectorXd, MatrixXd> UpdateState(int n_x, int n_aug, int n_z,
+                                        const MatrixXd& Xsig_pred,
+                                        const VectorXd& x, const MatrixXd& P,
+                                        const MatrixXd& Zsig,
+                                        const VectorXd& z_pred,
+                                        const MatrixXd& S, const VectorXd& z);
   /*
-   * Sigma Points in Measurement Space
+   * Sigma Points in Radar Measurement Space
    * @param n_z Measurement dimension, radar can measure r, phi, and r_dot
    * @param n_aug Augmentation dimension
    * @param Xsig_pred Predicted sigma points matrix
    */
-  const MatrixXd SigmaPointsMeasurementSpace(int n_z, int n_aug,
-                                             const MatrixXd Xsig_pred);
+  MatrixXd SigmaPointsRadarMeasurementSpace(int n_z, int n_aug,
+                                            const MatrixXd& Xsig_pred);
 
-  const VectorXd WeightsVector(int n_aug, double lambda);
-  const VectorXd MeanPredictedMeasurement(int n_z, int n_aug,
-                                           const VectorXd weights,
-                                           const MatrixXd Zsig);
-  const MatrixXd MeasurementCovarianceMatrixS(int n_z, int n_aug,
-                                               const MatrixXd Zsig,
-                                               const VectorXd z_pred,
-                                               const VectorXd weights);
-  const MatrixXd CrossCorrelationMatrix(int n_x, int n_aug, int n_z,
-                              const MatrixXd Zsig,
-                              const VectorXd z_pred,
-                              const MatrixXd Xsig_pred,
-                              const VectorXd x,
-                              const VectorXd weights);
+  /*
+   * Sigma Points in Laser Measurement Space
+   * @param n_z Measurement dimension, lidar can measure px, py
+   * @param n_aug Augmentation dimension
+   * @param Xsig_pred Predicted sigma points matrix
+   */
+  MatrixXd SigmaPointsLaserMeasurementSpace(int n_z, int n_aug,
+                                            const MatrixXd& Xsig_pred);
+
+  VectorXd WeightsVector(int n_aug, double lambda);
+  VectorXd MeanPredictedMeasurement(int n_z, int n_aug, const VectorXd& weights,
+                                    const MatrixXd& Zsig);
+  MatrixXd MeasurementCovarianceMatrixS(int n_z, int n_aug,
+                                        const MatrixXd& Zsig,
+                                        const VectorXd& z_pred,
+                                        const VectorXd& weights);
+  MatrixXd CrossCorrelationMatrix(int n_x, int n_aug, int n_z,
+                                  const MatrixXd& Zsig, const VectorXd& z_pred,
+                                  const MatrixXd& Xsig_pred, const VectorXd& x,
+                                  const VectorXd& weights);
+  static MatrixXd NoiseCovarianceMatrixRadar(int n_z, double std_radr,
+                                             double std_radphi,
+                                             double std_radrd);
+  static MatrixXd NoiseCovarianceMatrixLaser(int n_z, double std_laspx,
+                                             double std_laspy);
+  VectorXd InitStateLaserMeasurement(const MeasurementPackage& measurement_pack);
+  VectorXd InitStateRadarMeasurement(const MeasurementPackage& measurement_pack);
 };
 
 #endif /* UKF_H */
