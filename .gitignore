@@ -9,3 +9,5 @@ Debug/
 .cproject
 .project
 .settings/
+
+.ipynb_checkpoints

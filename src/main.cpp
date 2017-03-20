@@ -52,19 +52,21 @@ void check_files(ifstream& in_file, string& in_name, ofstream& out_file,
 
 int main(int argc, char* argv[]) {
 
-//  check_arguments(argc, argv);
-//
-//  string in_file_name_ = argv[1];
+  check_arguments(argc, argv);
+
+  string in_file_name_ = argv[1];
 
 // bug with lldb and eclipse - cant pass arguments when in debug mode
-  string proj_dir =
-      "/Users/nick/Desktop/Udacity/CarND-Unscented-Kalman-Filter-Project/";
-  string in_file_name_ = proj_dir
-      + "data/sample-laser-radar-measurement-data-2.txt";
+//  string proj_dir =
+//      "/Users/nick/Desktop/Udacity/CarND-Unscented-Kalman-Filter-Project/";
+//  string in_file_name_ = proj_dir
+//      + "data/sample-laser-radar-measurement-data-1.txt";
+
+
   ifstream in_file_(in_file_name_.c_str(), ifstream::in);
 
-//  string out_file_name_ = argv[2];
-  string out_file_name_ = proj_dir + "output.txt";
+  string out_file_name_ = argv[2];
+//  string out_file_name_ = proj_dir + "output.txt";
   ofstream out_file_(out_file_name_.c_str(), ofstream::out);
 
   check_files(in_file_, in_file_name_, out_file_, out_file_name_);
@@ -178,7 +180,11 @@ int main(int argc, char* argv[]) {
 
     // output the ground truth packages
     out_file_ << gt_pack_list[k].gt_values_(0) << "\t";
-    out_file_ << gt_pack_list[k].gt_values_(1) << "\n";
+    out_file_ << gt_pack_list[k].gt_values_(1) << "\t";
+
+    // output NIS
+    out_file_ << ukf.NIS_laser_ << "\t";
+    out_file_ << ukf.NIS_radar_ << "\n";
 
     auto xest = VectorXd(2);
     xest << ukf.x_(0), ukf.x_(1);
