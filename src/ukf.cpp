@@ -657,7 +657,8 @@ MatrixXd UKF::CrossCorrelationMatrix(int n_x, int n_aug, int n_z,
 //    while (z_diff(1) < -M_PI)
 //      z_diff(1) += 2. * M_PI;
     // state difference
-    VectorXd x_diff = Xsig_pred.col(i) - x;
+//    VectorXd x_diff = Xsig_pred.col(i) - x;
+    VectorXd x_diff = Xsig_pred.col(i) - Xsig_pred.col(0);
     //angle normalization
     x_diff(3) = normalizeRadiansPiToMinusPi(x_diff(3));
 //    while (x_diff(3) > M_PI)
