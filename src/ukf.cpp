@@ -43,10 +43,10 @@ UKF::UKF() {
   n_aug_ = 7;
 
   // Process noise standard deviation longitudinal acceleration in m/s^2
-  std_a_ = 3;
+  std_a_ = 0.45;
 
   // Process noise standard deviation yaw acceleration in rad/s^2
-  std_yawdd_ = 0.9; //0.1;
+  std_yawdd_ = 0.55; //0.1;
 
   // Laser measurement noise standard deviation position1 in m
   std_laspx_ = 0.15;
@@ -135,6 +135,12 @@ void UKF::ProcessMeasurement(MeasurementPackage measurement_pack) {
           0, 0, 1, 0, 0,
           0, 0, 0, 1, 0,
           0, 0, 0, 0, 1;
+
+//    P_ <<     0.0043,   -0.0013,    0.0030,   -0.0022,   -0.0020,
+//             -0.0013,    0.0077,    0.0011,    0.0071,    0.0060,
+//              0.0030,    0.0011,    0.0054,    0.0007,    0.0008,
+//             -0.0022,    0.0071,    0.0007,    0.0098,    0.0100,
+//             -0.0020,    0.0060,    0.0008,    0.0100,    0.0123;
 
     // print the output
 //    cout << "init x_ = " << x_ << endl;
@@ -356,10 +362,12 @@ tuple<VectorXd, MatrixXd> UKF::PredictMeanAndCovariance(
 
   //predicted state covariance matrix
   P.fill(0.0);
-  for (int i = 0; i < 2 * n_aug + 1; i++) {  //iterate over sigma points
+//  for (int i = 0; i < 2 * n_aug + 1; i++) {  //iterate over sigma points
+  for (int i = 1; i < 2 * n_aug + 1; i++) {  //iterate over sigma points
 
     // state difference
-    VectorXd x_diff = Xsig_pred.col(i) - x;
+//    VectorXd x_diff = Xsig_pred.col(i) - x;
+    VectorXd x_diff = Xsig_pred.col(i) - Xsig_pred.col(0);
 
     //angle normalization
     x_diff(3) = normalizeRadiansPiToMinusPi(x_diff(3));
@@ -570,10 +578,11 @@ MatrixXd UKF::MeasurementCovarianceMatrixS(int n_z, int n_aug,
   //measurement covariance matrix S
   MatrixXd S = MatrixXd(n_z, n_z);
   S.fill(0.0);
-  for (int i = 0; i < 2 * n_aug + 1; i++) {
+//  for (int i = 0; i < 2 * n_aug + 1; i++) {
+  for (int i = 1; i < 2 * n_aug + 1; i++) {
     //2n+1 simga points
     //residual
-    VectorXd z_diff = Zsig.col(i) - z_pred;
+    VectorXd z_diff = Zsig.col(i) - Zsig.col(0);
 
     //angle normalization
     z_diff(1) = normalizeRadiansPiToMinusPi(z_diff(1));
@@ -635,10 +644,12 @@ MatrixXd UKF::CrossCorrelationMatrix(int n_x, int n_aug, int n_z,
 
   //calculate cross correlation matrix
   Tc.fill(0.0);
-  for (int i = 0; i < 2 * n_aug + 1; i++) {
+//  for (int i = 0; i < 2 * n_aug + 1; i++) {
+  for (int i = 1; i < 2 * n_aug + 1; i++) {
     //2n+1 sigma points
     //residual
-    VectorXd z_diff = Zsig.col(i) - z_pred;
+//    VectorXd z_diff = Zsig.col(i) - z_pred;
+    VectorXd z_diff = Zsig.col(i) - Zsig.col(0);
     //angle normalization
     z_diff(1) = normalizeRadiansPiToMinusPi(z_diff(1));
 //    while (z_diff(1) > M_PI)

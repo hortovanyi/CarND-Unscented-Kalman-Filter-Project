@@ -60,8 +60,7 @@ int main(int argc, char* argv[]) {
 //  string proj_dir =
 //      "/Users/nick/Desktop/Udacity/CarND-Unscented-Kalman-Filter-Project/";
 //  string in_file_name_ = proj_dir
-//      + "data/sample-laser-radar-measurement-data-1.txt";
-
+//      + "data/sample-laser-radar-measurement-data-2.txt";
 
   ifstream in_file_(in_file_name_.c_str(), ifstream::in);
 
@@ -127,14 +126,14 @@ int main(int argc, char* argv[]) {
     // read ground truth data to compare later
     float x_gt;
     float y_gt;
-//    float vx_gt;
-//    float vy_gt;
+    float vx_gt;
+    float vy_gt;
     iss >> x_gt;
     iss >> y_gt;
-//    iss >> vx_gt;
-//    iss >> vy_gt;
-    gt_package.gt_values_ = VectorXd(2);
-    gt_package.gt_values_ << x_gt, y_gt;
+    iss >> vx_gt;
+    iss >> vy_gt;
+    gt_package.gt_values_ = VectorXd(4);
+    gt_package.gt_values_ << x_gt, y_gt, vx_gt, vy_gt;
     gt_pack_list.push_back(gt_package);
   }
 
@@ -181,13 +180,18 @@ int main(int argc, char* argv[]) {
     // output the ground truth packages
     out_file_ << gt_pack_list[k].gt_values_(0) << "\t";
     out_file_ << gt_pack_list[k].gt_values_(1) << "\t";
+    out_file_ << gt_pack_list[k].gt_values_(2) << "\t";
+    out_file_ << gt_pack_list[k].gt_values_(3) << "\t";
 
-    // output NIS
+    // output the NIS values for consistency check
     out_file_ << ukf.NIS_laser_ << "\t";
     out_file_ << ukf.NIS_radar_ << "\n";
 
-    auto xest = VectorXd(2);
-    xest << ukf.x_(0), ukf.x_(1);
+    auto xest = VectorXd(4);
+    xest << ukf.x_(0),                // x
+    ukf.x_(1),                    // y
+    ukf.x_(2) * cos(ukf.x_(3)),   // vx
+    ukf.x_(2) * sin(ukf.x_(3));   // vy
 
     estimations.push_back(xest);
     ground_truth.push_back(gt_pack_list[k].gt_values_);
